@@ -157,13 +157,17 @@ AI-OSINT-Kit/
 
 ### Core Endpoints
 
+- `GET /health` - Health check endpoint
+- `GET /api/v1/scan` - List all scans
 - `POST /api/v1/scan` - Start a new OSINT scan
-- `GET /api/v1/scan/{id}` - Get scan status and summary
-- `GET /api/v1/entity/{id}` - Get entity details
+- `GET /api/v1/scan/{id}` - Get scan status and summary with entities and findings
+- `GET /api/v1/entity/{id}` - Get entity details with findings
+- `GET /api/v1/entity/{id}/findings` - Get all findings for an entity
 - `GET /api/v1/search?q=...` - Search entities and scans
 - `GET /api/v1/report/{id}` - Get generated LLM report
-- `POST /api/v1/report/{scan_id}/generate` - Generate report from scan data
-- `WebSocket /ws/scans/{scan_id}` - Real-time scan progress updates
+- `GET /api/v1/report/scan/{scan_id}` - Get all reports for a scan
+- `POST /api/v1/report/{scan_id}/generate` - Generate report from scan data (LLM integration pending)
+- `WebSocket /ws/scans/{scan_id}` - Real-time scan progress updates (pending)
 
 See `/docs` for interactive API documentation.
 
@@ -185,26 +189,30 @@ See `backend/.env.example` for all available options.
 
 ## Development Roadmap
 
-### Phase 1 - MVP Backend & Core OSINT (✅ Current)
+### Phase 1 - MVP Backend & Core OSINT (✅ Complete)
 - [x] Database models and migrations
-- [x] Basic API endpoints
+- [x] Basic API endpoints (scan, entity, search, report)
 - [x] WHOIS module
-- [ ] SSL certificate module
-- [ ] Passive DNS module
-- [ ] Celery task integration
+- [x] SSL certificate module
+- [x] Celery task integration
+- [x] Database persistence for entities and findings
 
-### Phase 2 - LLM Integration & Reports
-- [ ] Ollama integration
+### Phase 2 - LLM Integration & Reports (🚧 In Progress)
+- [x] Report API endpoints
+- [ ] Ollama integration for report generation
 - [ ] Embedding pipeline
 - [ ] Report generation with LLM
 - [ ] RAG implementation
 
-### Phase 3 - Frontend & UX
+### Phase 3 - Frontend & UX (✅ Complete)
 - [x] Basic UI structure
-- [ ] Scan status page with real-time updates
-- [ ] Entity detail pages
-- [ ] Network graph visualization
-- [ ] WebSocket integration
+- [x] Dashboard with scan listing
+- [x] Scan creation page
+- [x] Scan detail page with entities and findings
+- [x] Entity detail pages
+- [x] Network graph visualization (Cytoscape.js)
+- [x] Reports page
+- [ ] WebSocket integration for real-time updates
 
 ### Phase 4 - Advanced Features
 - [ ] Additional OSINT modules (Shodan, HIBP, etc.)

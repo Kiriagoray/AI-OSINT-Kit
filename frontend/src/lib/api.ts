@@ -23,6 +23,8 @@ export interface Entity {
   metadata?: any
   first_seen: string
   last_seen: string
+  findings?: Finding[]
+  findings_count?: number
 }
 
 export interface Finding {
@@ -99,11 +101,38 @@ export const api = {
     return response.json()
   },
 
+  // Search entities and scans
+  async search(query: string): Promise<{ results: any[]; total: number }> {
+    const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`)
+    if (!response.ok) {
+      throw new Error('Failed to search')
+    }
+    return response.json()
+  },
+
   // Get health status
   async getHealth(): Promise<{ status: string; service: string; version: string }> {
     const response = await fetch('/health')
     if (!response.ok) {
       throw new Error('Failed to fetch health status')
+    }
+    return response.json()
+  },
+
+  // Get reports for a scan
+  async getScanReports(scanId: number): Promise<any[]> {
+    const response = await fetch(`${API_BASE_URL}/report/scan/${scanId}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch reports')
+    }
+    return response.json()
+  },
+
+  // Get report by ID
+  async getReport(reportId: number): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/report/${reportId}`)
+    if (!response.ok) {
+      throw new Error('Failed to fetch report')
     }
     return response.json()
   },
