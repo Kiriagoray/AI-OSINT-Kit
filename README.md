@@ -80,11 +80,6 @@ OSINT integrations (Shodan, HIBP, WHOIS, SSL, etc.)
    docker exec osintkit-ollama ollama pull llama3
    ```
 
-6. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - API Docs: http://localhost:8000/docs
-
 ### Local Development
 
 #### Backend
@@ -123,8 +118,6 @@ OSINT integrations (Shodan, HIBP, WHOIS, SSL, etc.)
    ```bash
    npm run dev
    ```
-
-3. **Access at** http://localhost:5173
 
 ## Project Structure
 
