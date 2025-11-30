@@ -1,0 +1,111 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: osintkit-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: osintkit
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Celery
+  redis:
+    image: redis:7
+    container_name: osintkit-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: osintkit-backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/osintkit
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - LLM_BACKEND=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: osintkit-celery
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/osintkit
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - LLM_BACKEND=ollama
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - DEBUG=true
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    command: celery -A app.tasks.scan.celery_app worker --loglevel=info
+
+  # Ollama (Local LLM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: osintkit-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Note: You'll need to pull models manually after starting:
+    # docker exec osintkit-ollama ollama pull llama3
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: osintkit-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    # For development, you might want to use a different setup
+    # with volume mounting for hot reload
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
+
+
+
